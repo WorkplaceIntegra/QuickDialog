@@ -30,6 +30,7 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+	[tableView endEditing:YES]; // rickb
     QSection *section = [_tableView.root getVisibleSectionForIndex:indexPath.section];
     QElement * element = [section getVisibleElementForIndex: indexPath.row];
 

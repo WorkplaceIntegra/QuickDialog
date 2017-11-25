@@ -28,6 +28,25 @@
     return self;
 }
 
+// rickb begin
+- (void)layoutSubviews
+{
+    if(self.detailTextLabel.text.length == 0)
+        self.detailTextLabel.text = @" ";
+
+    [super layoutSubviews];
+	
+	self.textLabel.center = CGPointMake(self.superview.bounds.size.width*.5-self.textLabel.bounds.size.width*.5-100, self.textLabel.center.y);
+	self.detailTextLabel.center = CGPointMake(self.superview.bounds.size.width*.5+self.detailTextLabel.bounds.size.width*.5-75, self.detailTextLabel.center.y);
+
+	self.textLabel.textAlignment = NSTextAlignmentRight;
+	self.detailTextLabel.textAlignment = NSTextAlignmentLeft;
+
+	self.detailTextLabel.textColor = UIColor.blackColor;
+}
+// rickb end
+
+
 - (void)createSubviews
 {
     [super createSubviews];

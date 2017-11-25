@@ -165,6 +165,20 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     [self recalculateEntryFieldPosition];
+
+    [super layoutSubviews];
+	
+// rickb begin
+	self.textLabel.center = CGPointMake(self.superview.bounds.size.width*.5-self.textLabel.bounds.size.width*.5-100, self.textLabel.center.y);
+	self.textField.center = CGPointMake(self.superview.bounds.size.width*.5+self.textField.bounds.size.width*.5-75, self.textField.center.y);
+
+	self.textLabel.textAlignment = NSTextAlignmentRight;
+	self.textField.textAlignment = NSTextAlignmentLeft;
+	
+	CGRect frame = self.textField.frame;
+	frame.size.width -= 25;
+	self.textField.frame = frame;
+// rickb end
 }
 
 
