@@ -1,10 +1,8 @@
 #import "QDynamicDataSection.h"
 #import "QuickDialog.h"
-#import "QEmptyListElement.h"
 
 @implementation QDynamicDataSection {
     NSString *_emptyMessage;
-    BOOL showLoading;
 }
 @synthesize emptyMessage = _emptyMessage;
 
@@ -18,12 +16,11 @@
     return self;
 }
 
-- (void)bindToObject:(id)data withString:(NSString *)withBindString
-{
+- (void)bindToObject:(id)data {
 
     [self.elements removeAllObjects];
 
-    [super bindToObject:data withString:withBindString];
+    [super bindToObject:data];
     
     if (self.elements.count>0) //elements exist
         return;
@@ -36,15 +33,16 @@
         NSString *valueName = [((NSString *) [bindingParams objectAtIndex:1]) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         
         if ([propName isEqualToString:@"iterate"]) {
-            collection = [data valueForKeyPath:valueName];
+            collection = [data valueForKey:valueName];
         }
     }
 
-    if (collection==nil && showLoading)
+    
+    if (collection==nil)
         [self addElement:[[QLoadingElement alloc] init]];
     
     if (collection!=nil && collection.count==0)
-        [self addElement:[[QEmptyListElement alloc] initWithTitle:_emptyMessage Value:nil]];
+        [self addElement:[[QLabelElement alloc] initWithTitle:_emptyMessage Value:nil]];
 }
 
 

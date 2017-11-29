@@ -19,7 +19,7 @@
 
 @implementation QElement {
 @private
-    id _object;
+    NSObject *_object;
     NSString *_controllerAccessoryAction;
 }
 
@@ -42,7 +42,6 @@
     self = [super init];
     if (self) {
         self.enabled = YES;
-        self.shallowBind = YES;
     }
     return self;
 }
@@ -52,21 +51,23 @@
     if (self){
         self.key = key;
         self.enabled = YES;
-        self.shallowBind = YES;
     }
     return self;
 }
 
 - (UITableViewCell *)getCellForTableView:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller {
-    _controller = controller;
+    QTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[NSString stringWithFormat:@"QuickformElementCell%@", self.key]];
+    if (cell == nil){
+        cell = [[QTableViewCell alloc] initWithReuseIdentifier:[NSString stringWithFormat:@"QuickformElementCell%@", self.key]];
+    }
+    if (!self.enabled) {
+        cell.textLabel.textColor = [UIColor lightGrayColor];
+    }
     
-    QTableViewCell *cell= [self getOrCreateEmptyCell:tableView];
-
-    [cell applyAppearanceForElement:self];
-
     cell.textLabel.text = nil; 
     cell.detailTextLabel.text = nil; 
     cell.imageView.image = nil; 
+    cell.userInteractionEnabled = self.enabled;
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.showsReorderControl = YES;
     cell.accessoryView = nil;
@@ -74,21 +75,25 @@
     return cell;
 }
 
-- (QTableViewCell *)getOrCreateEmptyCell:(QuickDialogTableView *)tableView {
-    QTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[NSString stringWithFormat:@"QuickformElementCell%@%@", self.key, self.class]];
-    if (cell == nil){
-        cell = [[QTableViewCell alloc] initWithReuseIdentifier:[NSString stringWithFormat:@"QuickformElementCell%@%@", self.key, NSStringFromClass(self.class)]];
+- (void)handleElementSelected:(QuickDialogController *)controller {
+    if (_onSelected!= nil)
+          _onSelected();
+
+    if (self.controllerAction!=NULL && !controller.quickDialogTableView.editing){
+        SEL selector = NSSelectorFromString(self.controllerAction);
+        if ([controller respondsToSelector:selector]) {
+            objc_msgSend(controller,selector, self);
+        }  else {
+            NSLog(@"No method '%@' was found on controller %@", self.controllerAction, [controller class]);
+        }
     }
-    return cell;
 }
-
-
 
 - (void)selectedAccessory:(QuickDialogTableView *)tableView  controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath{
     if (self.controllerAccessoryAction!=NULL){
             SEL selector = NSSelectorFromString(self.controllerAccessoryAction);
             if ([controller respondsToSelector:selector]) {
-                ((void (*)(id, SEL, id)) objc_msgSend)(controller, selector, self);
+                objc_msgSend(controller,selector, self);
             }  else {
                 NSLog(@"No method '%@' was found on controller %@", self.controllerAccessoryAction, [controller class]);
             }
@@ -96,9 +101,8 @@
 }
 
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath {
-    _controller = controller;
     [[tableView cellForRowAtIndexPath:indexPath] becomeFirstResponder];
-    [self performAction];
+    [self handleElementSelected:controller];
 }
 
 - (CGFloat)getRowHeightForTableView:(QuickDialogTableView *)tableView {
@@ -118,48 +122,15 @@
 - (void)fetchValueIntoObject:(id)obj {
 }
 
--(void)bindToObject:(id)data withString:(NSString *)string{
-    [[QBindingEvaluator new] bindObject:self toData:data withString:string];
-}
-
 -(void)bindToObject:(id)data {
     [[QBindingEvaluator new] bindObject:self toData:data];
 }
 
 
-- (void)bindToObject:(id)data shallow:(BOOL)shallow
-{
-    [[QBindingEvaluator new] bindObject:self toData:data];
-}
-
 - (void)fetchValueUsingBindingsIntoObject:(id)data {
     [[QBindingEvaluator new] fetchValueFromObject:self toData:data];
 }
 
-- (void)performAction
-{
-    if (_onSelected!= nil)
-        _onSelected();
 
-    if (self.controllerAction!=NULL){
-        SEL selector = NSSelectorFromString(self.controllerAction);
-        if ([_controller respondsToSelector:selector]) {
-			((void (*)(id, SEL, id)) objc_msgSend)(_controller, selector, self);
-        }  else {
-            NSLog(@"No method '%@' was found on controller %@", self.controllerAction, [_controller class]);
-        }
-    }
-}
-
--(void)performAccessoryAction{
-    if (_controller!=nil && self.controllerAccessoryAction!=nil) {
-        SEL selector = NSSelectorFromString(self.controllerAccessoryAction);
-        if ([_controller respondsToSelector:selector]) {
-            ((void (*)(id, SEL, id)) objc_msgSend)(_controller, selector, self);
-        }  else {
-            NSLog(@"No method '%@' was found on controller %@", self.controllerAccessoryAction, [_controller class]);
-        }
-    }
-}
 
 @end

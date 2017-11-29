@@ -15,12 +15,12 @@
 #import "QBindingEvaluator.h"
 #import "QRootElement.h"
 #import "QuickDialog.h"
-#import "QEntryElement.h"
 
 @implementation QRootElement {
 @private
     NSDictionary *_sectionTemplate;
     QPresentationMode _presentationMode;
+    void (^_onValueChanged)();
 }
 
 
@@ -32,10 +32,9 @@
 @synthesize emptyMessage = _emptyMessage;
 @synthesize onValueChanged = _onValueChanged;
 @synthesize presentationMode = _presentationMode;
-@synthesize preselectedElementIndex = _preselectedElementIndex;
 
 
-- (instancetype)init {
+- (QRootElement *)init {
     self = [super init];
     return self;
 
@@ -46,21 +45,6 @@
 
     [_sections addObject:section];
     section.rootElement = self;
-}
-
-- (void)setSections:(NSMutableArray *)sections
-{
-    _sections = nil;
-    for (QSection *section in sections){
-        [self addSection:section];
-    }
-}
-
-
-+ (instancetype)rootForJSON:(NSString *)jsonFileName withObject:(id)object {
-    QRootElement *root = [self rootForJSON:jsonFileName];
-    root.object = object;
-    return root;
 }
 
 - (QSection *)getSectionForIndex:(NSInteger)index {
@@ -105,9 +89,10 @@
 
 - (UITableViewCell *)getCellForTableView:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller {
     UITableViewCell *cell = [super getCellForTableView:tableView controller:controller];
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     if (_title!= nil)
-        cell.textLabel.text = [NSString stringWithFormat:@"%@", _title];
+        cell.textLabel.text = _title;
     return cell;
 }
 
@@ -118,13 +103,6 @@
             return;
 
     [controller displayViewControllerForRoot:self];
-}
-
-- (void)handleEditingChanged
-{    
-    if(self.onValueChanged) {
-        self.onValueChanged(self);
-    }
 }
 
 - (void)fetchValueIntoObject:(id)obj {
@@ -141,23 +119,16 @@
     }
 }
 
-- (void)bindToObject:(id)data shallow:(BOOL)shallow
-{
-    if (!shallow) {
-        if ([self.bind length]==0 || [self.bind rangeOfString:@"iterate"].location == NSNotFound)  {
-            for (QSection *sections in self.sections) {
-                [sections bindToObject:data];
-            }
-        } else {
-            [self.sections removeAllObjects];
+- (void)bindToObject:(id)data {
+    if ([self.bind length]==0 || [self.bind rangeOfString:@"iterate"].location == NSNotFound)  {
+        for (QSection *sections in self.sections) {
+            [sections bindToObject:data];
         }
+    } else {
+        [self.sections removeAllObjects];
     }
 
     [[QBindingEvaluator new] bindObject:self toData:data];
-}
-
-- (void)bindToObject:(id)data {
-    [self bindToObject:data shallow:NO];
 }
 
 -(void)dealloc {
@@ -190,44 +161,4 @@
     }
     return nil;
 }
-
-- (QRootElement *)rootWithKey:(NSString *)string {
-    return (QRootElement *) [self elementWithKey:string];
-
-}
-
-
-- (QEntryElement *)findElementToFocusOnBefore:(QElement *)previous {
-
-    QEntryElement *previousElement = nil;
-    for (QSection *section in self.sections) {
-        for (QElement *e in section.elements) {
-            if (e == previous) {
-                return previousElement;
-            }
-            else if ([e isKindOfClass:[QEntryElement class]] && [(QEntryElement *)e canTakeFocus]) {
-                previousElement = (QEntryElement *)e;
-            }
-        }
-    }
-    return nil;
-}
-
-- (QEntryElement *)findElementToFocusOnAfter:(QElement *)element {
-
-    BOOL foundSelf = element == nil;
-    for (QSection *section in self.sections) {
-        for (QElement *e in section.elements) {
-            if (e == element) {
-                foundSelf = YES;
-            }
-            else if (foundSelf && [e isKindOfClass:[QEntryElement class]] && [(QEntryElement *)e canTakeFocus]) {
-                return (QEntryElement *) e;
-            }
-        }
-    }
-    return nil;
-}
-
-
 @end

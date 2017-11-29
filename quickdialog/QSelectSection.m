@@ -9,24 +9,12 @@
 #import "QSelectSection.h"
 #import "QuickDialog.h"
 
-@implementation QSelectSection {
-}
-
+@implementation QSelectSection
 
 @synthesize selectedIndexes = _selected;
 @synthesize multipleAllowed = _multipleAllowed;
 @synthesize onSelected = _onSelected;
 
-- (id)init {
-    self = [super init];
-    if (self) {
-        self.selectedIndexes = [@[] mutableCopy];
-        self.multipleAllowed = NO;
-        self.deselectAllowed = NO;
-    }
-
-    return self;
-}
 
 - (QSelectSection *)initWithItems:(NSArray *)stringArray selectedIndexes:(NSArray *)selected
 {
@@ -99,15 +87,6 @@
         [self addElement:[[QSelectItemElement alloc] initWithIndex:i selectSection:self]];
     }
 }
-
-- (void)addElement:(QElement *)element {
-    [super addElement:element];
-    if ([element isKindOfClass:[QSelectItemElement class]]){
-        ((QSelectItemElement *)element).selectSection = self;
-        ((QSelectItemElement *)element).index = self.elements.count-1;
-    }
-}
-
 
 - (void)addOption:(NSString *)option
 {

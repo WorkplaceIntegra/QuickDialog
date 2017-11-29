@@ -14,10 +14,6 @@
 
 #import "QLabelElement.h"
 
-/**
-  QBooleanElement: shows a on/off switch
-*/
-
 @interface QBooleanElement : QLabelElement {
     BOOL _boolValue;
     BOOL _enabled;
@@ -27,7 +23,7 @@
 
 @property(nonatomic, retain) UIImage *onImage;
 @property(nonatomic, retain) UIImage *offImage;
-@property(nonatomic, readwrite, assign) NSNumber *numberValue;
+@property(nonatomic, assign) NSNumber *numberValue;
 @property (nonatomic) BOOL boolValue;
 
 - (QBooleanElement *)initWithTitle:(NSString *)title BoolValue:(BOOL)value;

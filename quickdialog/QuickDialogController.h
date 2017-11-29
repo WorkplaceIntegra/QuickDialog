@@ -12,15 +12,10 @@
 // permissions and limitations under the License.
 //
 
-#import "QElement.h"
 #import "QuickDialogTableView.h"
 
 @class QRootElement;
 @class QuickDialogTableView;
-
-/**
- QuickDialogController is a subclass of a UITableViewController that is responsible for actually displaying the dialog. For your application, you’ll very likely be creating subclasses of this class, one for each dialog you own. You’ll never really have to create objects of this type directly with alloc/init. The framework takes care of this for you.
- */
 
 @interface QuickDialogController : UIViewController <UIPopoverControllerDelegate> {
 
@@ -51,11 +46,6 @@
 - (QuickDialogController *)controllerForRoot:(QRootElement *)root;
 
 + (QuickDialogController *)controllerForRoot:(QRootElement *)root;
-
-/**
- Called before a cell is removed from the tableView. Return YES and QuickDialog will delete the cell, return NO if you want to delete the cell or reload the tableView yourself.
-*/
-- (BOOL)shouldDeleteElement:(QElement *)element;
 
 + (UINavigationController *)controllerWithNavigationForRoot:(QRootElement *)root;
 

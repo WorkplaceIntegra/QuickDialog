@@ -15,10 +15,6 @@
 #import "QSection.h"
 #import "QSelectSection.h"
 
-/**
-  QRadioSection: display multiple choice elements inline, instead of pushing another view controller with the options.
-*/
-
 @interface QRadioSection : QSelectSection
 
 @property(nonatomic) NSInteger selected;

@@ -1,94 +1,120 @@
 #import "QuickDialogController+Animations.h"
-#import "QElement.h"
-#import "QRootElement.h"
+#import "QuickDialog.h"
 
 @implementation QuickDialogController (Animations)
 
 
-- (void) switchElementsWithAnimation:(UITableViewRowAnimation)animation elements:(NSArray*)elements
-{
-    NSMutableArray *in= [NSMutableArray new];
-    NSMutableArray *out = [NSMutableArray new];
-    for (QElement *el in elements){
-        if (el.hidden)
-            [in addObject:el];
-        else
-            [out addObject:el];
-    }
-    [self showHideElementsWithInsertAnimation:animation removeAnimation:animation elementsToInsert:in elementsToRemove:out];
 
-}
-- (void) hideElementsWithAnimation:(UITableViewRowAnimation)animation elements:(NSArray*)elements
+- (void) hideElementsWithAnimation:(UITableViewRowAnimation)animation elements:(QElement*)element,...
 {
-    [self showHideElementsWithInsertAnimation:animation removeAnimation:animation elementsToInsert:nil elementsToRemove:elements];
+    va_list args;
+    va_start(args, element);
+    [self hideElementsWithInsertAnimation:animation removeAnimation:animation elements:element args:args];
+    va_end(args);
 }
-- (void) hideSectionsWithAnimation:(UITableViewRowAnimation)animation sections:(NSArray*)sections
+- (void) hideSectionsWithAnimation:(UITableViewRowAnimation)animation sections:(QSection*)section,...
 {
-    [self showHideSectionsWithInsertAnimation:animation removeAnimation:animation sectionsToInsert:nil sectionsToRemove:sections];
+    va_list args;
+    va_start(args, section);
+    [self hideSectionsWithInsertAnimation:animation removeAnimation:animation sections:section args:args];
+    va_end(args);
 }
-- (void) showElementsWithAnimation:(UITableViewRowAnimation)animation elements:(NSArray*)elements
+- (void) hideElementsWithInsertAnimation:(UITableViewRowAnimation)insertAnimation removeAnimation:(UITableViewRowAnimation)removeAnimation elements:(QElement*)element,...
 {
-    [self showHideElementsWithInsertAnimation:animation removeAnimation:animation elementsToInsert:elements elementsToRemove:nil];
+    va_list args;
+    va_start(args, element);
+    [self hideElementsWithInsertAnimation:insertAnimation removeAnimation:removeAnimation elements:element args:args];
+    va_end(args);
 }
-- (void) showSectionsWithAnimation:(UITableViewRowAnimation)animation sections:(NSArray*)sections
+- (void) hideSectionsWithInsertAnimation:(UITableViewRowAnimation)insertAnimation removeAnimation:(UITableViewRowAnimation)removeAnimation sections:(QSection*)section,...
 {
-    [self showHideSectionsWithInsertAnimation:animation removeAnimation:animation sectionsToInsert:sections sectionsToRemove:nil];
+    va_list args;
+    va_start(args, section);
+    [self hideSectionsWithInsertAnimation:insertAnimation removeAnimation:removeAnimation sections:section args:args];
+    va_end(args);
 }
 
-- (void) showHideElementsWithInsertAnimation:(UITableViewRowAnimation)insertAnimation removeAnimation:(UITableViewRowAnimation)removeAnimation elementsToInsert:(NSArray*)ins elementsToRemove:(NSArray*) del
+- (void) hideElementsWithInsertAnimation:(UITableViewRowAnimation)insertAnimation removeAnimation:(UITableViewRowAnimation)removeAnimation elements:(QElement*)element args:(va_list)args
 {
     NSMutableArray * idx = [NSMutableArray new];
+    NSMutableArray * del = [NSMutableArray new];
+    NSMutableArray * ins = [NSMutableArray new];
+
+    while (element)
+    {
+        BOOL h = va_arg(args, /*BOOL*/int);
+        if (h)
+            [del addObject:element];
+        else
+            [ins addObject:element];
+        element = va_arg(args, QElement*);
+    }
 
     [self.quickDialogTableView beginUpdates];
-    for (QElement *element in [del reverseObjectEnumerator])
+    NSEnumerator * i = [del reverseObjectEnumerator];
+    while ((element =/*=*/ i.nextObject))
     {
         if (!element.hidden)
         {
             [idx addObject:[NSIndexPath indexPathForRow:element.visibleIndex inSection:element.parentSection.visibleIndex]];
             element.hidden = YES;
-            [self.quickDialogTableView deleteRowsAtIndexPaths:idx withRowAnimation:removeAnimation];
         }
     }
+    [self.quickDialogTableView deleteRowsAtIndexPaths:idx withRowAnimation:removeAnimation];
 
     [idx removeAllObjects];
-    for (QElement *element in ins)
+    for (element in ins)
     {
         if (element.hidden)
         {
             element.hidden = NO;
             [idx addObject:[NSIndexPath indexPathForRow:element.visibleIndex inSection:element.parentSection.visibleIndex]];
-            [self.quickDialogTableView insertRowsAtIndexPaths:idx withRowAnimation:insertAnimation];
         }
     }
+    [self.quickDialogTableView insertRowsAtIndexPaths:idx withRowAnimation:insertAnimation];
     [self.quickDialogTableView endUpdates];
 }
 
-- (void) showHideSectionsWithInsertAnimation:(UITableViewRowAnimation)insertAnimation removeAnimation:(UITableViewRowAnimation)removeAnimation sectionsToInsert:(NSArray*)ins sectionsToRemove:(NSArray*)del
+- (void) hideSectionsWithInsertAnimation:(UITableViewRowAnimation)insertAnimation removeAnimation:(UITableViewRowAnimation)removeAnimation sections:(QSection *)section args:(va_list)args
 {
     NSMutableIndexSet * idx = [NSMutableIndexSet new];
+    NSMutableArray * del = [NSMutableArray new];
+    NSMutableArray * ins = [NSMutableArray new];
+    while (section)
+    {
+        BOOL h = va_arg(args, /*BOOL*/int);
+        if (h)
+            [del addObject:section];
+        else
+            [ins addObject:section];
+        section = va_arg(args, QSection*);
+    }
 
     [self.quickDialogTableView beginUpdates];
-    for (QSection *section in [del reverseObjectEnumerator])
+    NSEnumerator * i = [del reverseObjectEnumerator];
+    while ((section =/*=*/ i.nextObject))
     {
         if (!section.hidden)
         {
             [idx addIndex:section.visibleIndex];
             section.hidden = YES;
-            [self.quickDialogTableView deleteSections:idx withRowAnimation:removeAnimation];
         }
     }
+    [self.quickDialogTableView deleteSections:idx withRowAnimation:removeAnimation];
 
     [idx removeAllIndexes];
-    for (QSection *section in ins)
+    for (section in ins)
     {
         if (section.hidden)
         {
             section.hidden = NO;
             [idx addIndex:section.visibleIndex];
-            [self.quickDialogTableView insertSections:idx withRowAnimation:insertAnimation];
         }
     }
+    [self.quickDialogTableView insertSections:idx withRowAnimation:insertAnimation];
     [self.quickDialogTableView endUpdates];
 }
+
+
 
 @end

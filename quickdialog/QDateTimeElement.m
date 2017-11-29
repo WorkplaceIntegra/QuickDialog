@@ -24,7 +24,6 @@
 
 @interface QDateTimeElement ()
 - (void)initializeRoot;
-- (void)updateElements;
 
 @end
 
@@ -35,25 +34,18 @@
 
 - (void)setMode:(UIDatePickerMode)mode {
 	_mode = mode;
-	[[self sections] removeAllObjects];
+	self.sections = nil;
 	[self initializeRoot];
-}
-
-- (void)setMinuteInterval:(NSInteger)minuteInterval
-{
-    _minuteInterval = minuteInterval;
-    self.sections = nil;
-    [self initializeRoot];
 }
 
 - (void)setDateValue:(NSDate *)date {
     _dateValue = date;
-    [self updateElements];
+    self.sections = nil;
+    [self initializeRoot];
 }
 
 - (void)setTicksValue:(NSNumber *)ticks {
-    if (ticks!=nil)
-        [self setDateValue:[NSDate dateWithTimeIntervalSince1970:ticks.doubleValue]];
+    [self setDateValue:[NSDate dateWithTimeIntervalSince1970:ticks.doubleValue]];
 }
 
 -(NSNumber *)ticksValue {
@@ -62,11 +54,6 @@
 
 - (UIDatePickerMode)mode {
     return _mode;
-}
-
-- (NSInteger)minuteInterval
-{
-    return _minuteInterval;
 }
 
 - (QDateTimeElement *)init {
@@ -84,7 +71,7 @@
         _mode = UIDatePickerModeDateAndTime;
 		_title = title;
         _dateValue = date;
-        [self updateElements];
+        [self initializeRoot];
     }
     return self;
 }
@@ -107,6 +94,8 @@
             [dateFormatter setTimeStyle:NSDateFormatterShortStyle];
             break;
 		case UIDatePickerModeCountDownTimer:
+            [dateFormatter setDateStyle:NSDateFormatterMediumStyle];
+            [dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 			break;
     }
 
@@ -122,33 +111,24 @@
         dateForSection = NSDate.date;
     }
 	QSection *section = [[QSection alloc] initWithTitle:(_mode == UIDatePickerModeDateAndTime ? @"\n" : @"\n\n")];
+    if (_mode == UIDatePickerModeDate || _mode == UIDatePickerModeDateAndTime){
+        QDateTimeInlineElement *dateElement = (QDateTimeInlineElement *) [[QDateTimeInlineElement alloc] initWithKey:@"date"];
+        dateElement.dateValue = dateForSection;
+        dateElement.centerLabel = YES;
+        dateElement.mode =  UIDatePickerModeDate;
+        dateElement.hiddenToolbar = YES;
+        [section addElement:dateElement];
+
+    }
     if (_mode == UIDatePickerModeTime || _mode == UIDatePickerModeDateAndTime){
         QDateTimeInlineElement *timeElement = (QDateTimeInlineElement *) [[QDateTimeInlineElement alloc] initWithKey:@"time"];
         timeElement.dateValue = dateForSection;
         timeElement.centerLabel = YES;
         timeElement.mode = UIDatePickerModeTime;
         timeElement.hiddenToolbar = YES;
-        timeElement.minuteInterval = _minuteInterval;
-        
         [section addElement:timeElement];
     }
     [self addSection:section];
-}
-
-- (void)updateElements
-{
-    QDateTimeInlineElement *dateElement = (QDateTimeInlineElement *)[self elementWithKey:@"date"];
-    QDateTimeInlineElement *timeElement = (QDateTimeInlineElement *)[self elementWithKey:@"time"];
-    
-    NSDate *dateForElements = (_dateValue == nil) ? NSDate.date : _dateValue;
-    
-    if (dateElement != nil) {
-        dateElement.dateValue = dateForElements;
-    }
-    
-    if (timeElement != nil) {
-        timeElement.dateValue = dateForElements;
-    }
 }
 
 - (void)fetchValueIntoObject:(id)obj {
@@ -166,7 +146,7 @@
     newController.quickDialogTableView.scrollEnabled = NO;
     [controller displayViewController:newController];
 
-	__weak QuickDialogController *controllerForBlock = newController;
+	__block QuickDialogController *controllerForBlock = newController;
 	
     newController.willDisappearCallback = ^{
         NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
@@ -186,8 +166,6 @@
         else if (_mode == UIDatePickerModeDateAndTime){
             date = [dict valueForKey:@"date"];
             time = [dict valueForKey:@"time"];
-        } else {
-            NSLog(@"This control was not created to handle this time of UIDatePickerMode");
         }
 
         NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:date];

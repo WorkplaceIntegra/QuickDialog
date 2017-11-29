@@ -14,10 +14,6 @@
 
 #import "QLabelElement.h"
 
-/**
-  QButtonElement: centered title that looks like a button.
-*/
-
 @interface QButtonElement : QLabelElement
 
 - (QButtonElement *)init;

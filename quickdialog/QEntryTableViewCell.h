@@ -21,19 +21,18 @@
 @class QEntryElement;
 @class QuickDialogTableView;
 @class QTextField;
-@class QImageElement;
 
 
 @interface QEntryTableViewCell : QTableViewCell<UITextFieldDelegate> {
 
     QEntryElement *_entryElement;
-    UITextField *_textField;
+    QTextField *_textField;
 
 @protected
     __unsafe_unretained QuickDialogTableView *_quickformTableView;
 }
 
-@property(nonatomic, strong) UITextField *textField;
+@property(nonatomic, strong) QTextField *textField;
 
 - (void)updatePrevNextStatus;
 
@@ -46,8 +45,14 @@
 - (CGRect)calculateFrameForEntryElement;
 
 
+- (QEntryElement *)findNextElementToFocusOn;
+
 - (BOOL)handleActionBarDone:(UIBarButtonItem *)doneButton;
 
+- (QEntryElement *)findPreviousElementToFocusOn;
+
 - (void)recalculateEntryFieldPosition;
+
+- (void)handleEditingChanged;
 
 @end

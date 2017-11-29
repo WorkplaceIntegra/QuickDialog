@@ -15,23 +15,15 @@
 
 #import <Foundation/Foundation.h>
 
-@class QElement;
-
 typedef enum {
-    QLabelingPolicyTrimValue,
-    QLabelingPolicyTrimTitle
+    QLabelingPolicyTrimTitle,
+    QLabelingPolicyTrimValue
 } QLabelingPolicy;
-
-static const int QCellMarginDouble = 16;
-static const int QCellMargin = 8;
 
 @interface QTableViewCell : UITableViewCell
 
 - (QTableViewCell *)initWithReuseIdentifier:(NSString *)string;
 
-- (void)layoutSubviewsInsideBounds:(CGRect)bounds;
-
 @property (nonatomic) QLabelingPolicy labelingPolicy;
 
-- (void)applyAppearanceForElement:(QElement *)element;
 @end

@@ -12,7 +12,6 @@
 // permissions and limitations under the License.
 //
 
-#import <sys/ucred.h>
 #import "QuickDialogTableDelegate.h"
 #import "QuickDialog.h"
 @implementation QuickDialogTableDelegate
@@ -52,7 +51,7 @@
 }
 
 - (BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPath {
-    return NO;
+    return YES;
 }
 - (NSIndexPath *)tableView:(UITableView *)tableView targetIndexPathForMoveFromRowAtIndexPath:(NSIndexPath *)sourceIndexPath toProposedIndexPath:(NSIndexPath *)proposedDestinationIndexPath
 {
@@ -69,55 +68,67 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)index {
     QSection *section = [_tableView.root getVisibleSectionForIndex:index];
-    return [_tableView.root.appearance heightForHeaderInSection:section andTableView:_tableView andIndex:index];
+
+    if (section.headerView==nil && _tableView.styleProvider!=nil && [_tableView.styleProvider respondsToSelector:@selector(sectionHeaderWillAppearForSection:atIndex:)]){
+        [_tableView.styleProvider sectionHeaderWillAppearForSection:section atIndex:index];
+    }
+    
+    if (section.headerView!=nil)
+            return section.headerView.frame.size.height;
+
+    if (section.title==nil)
+        return 0;
+
+    if (!_tableView.root.grouped)
+        return 22.f;
+
+    CGFloat stringTitleHeight = 0;
+
+    if (section.title != nil) {
+        CGFloat maxWidth = [UIScreen mainScreen].bounds.size.width - 20;
+        CGFloat maxHeight = 9999;
+        CGSize maximumLabelSize = CGSizeMake(maxWidth,maxHeight);
+        CGSize expectedLabelSize = [section.title sizeWithFont:[UIFont systemFontOfSize:[UIFont labelFontSize]]
+                                              constrainedToSize:maximumLabelSize
+                                                  lineBreakMode:NSLineBreakByWordWrapping];
+
+        stringTitleHeight = expectedLabelSize.height;//+23.f;
+    }
+
+
+    return section.title != NULL? stringTitleHeight : 0;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)index {
     QSection *section = [_tableView.root getVisibleSectionForIndex:index];
-    return [_tableView.root.appearance heightForFooterInSection:section andTableView:_tableView andIndex:index];
+
+    if (section.footerView==nil && _tableView.styleProvider!=nil && [_tableView.styleProvider respondsToSelector:@selector(sectionFooterWillAppearForSection:atIndex:)]){
+        [_tableView.styleProvider sectionFooterWillAppearForSection:section atIndex:index];
+    }
+    
+    if (section.footerView!=nil)
+        return section.footerView.frame.size.height;
+
+    return section.footer != NULL? -1 : 0;
 }
 
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
     QSection *section = [_tableView.root getVisibleSectionForIndex:indexPath.section];
     QElement *element = [section getVisibleElementForIndex: indexPath.row];
-    [_tableView.root.appearance cell:cell willAppearForElement:element atIndexPath:indexPath];
-
-    if ([_tableView.quickDialogDelegate respondsToSelector:@selector(cell:willAppearForElement:atIndexPath:)]){
-        [_tableView.quickDialogDelegate cell:cell willAppearForElement:element atIndexPath:indexPath];
+    if (_tableView.styleProvider != nil) {
+        [_tableView.styleProvider cell:cell willAppearForElement:element atIndexPath:indexPath];
     }
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)index {
     QSection *section = [_tableView.root getVisibleSectionForIndex:index];
-    if (section.headerView!=nil)
-        return section.headerView;
 
-    QAppearance *appearance = ((QuickDialogTableView *) tableView).root.appearance;
-    UIView *header = [appearance buildHeaderForSection:section andTableView:(QuickDialogTableView*)tableView andIndex:index];
-    if ([_tableView.quickDialogDelegate respondsToSelector:@selector(header:willAppearForSection:atIndex:)]){
-        [_tableView.quickDialogDelegate header:header willAppearForSection:section atIndex:index];
-    }
-
-    if (section.headerView!=nil)
-        return section.headerView;
-
-    return header;
+    return section.headerView;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)index {
     QSection *section = [_tableView.root getVisibleSectionForIndex:index];
-    if (section.footerView!=nil)
-        return section.footerView;
-
-    QAppearance *appearance = ((QuickDialogTableView *) tableView).root.appearance;
-    UIView *footer = [appearance buildFooterForSection:section andTableView:(QuickDialogTableView*)tableView andIndex:index];
-    if ([_tableView.quickDialogDelegate respondsToSelector:@selector(footer:willAppearForSection:atIndex:)]){
-        [_tableView.quickDialogDelegate footer:footer willAppearForSection:section atIndex:index];
-    }
-    if (section.footerView!=nil)
-        return section.footerView;
-
-    return footer;
+    return section.footerView;
 }
 
 

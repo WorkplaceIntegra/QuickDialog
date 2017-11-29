@@ -50,13 +50,6 @@
     self.view = _textView;
 }
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-    if ([self respondsToSelector:@selector(edgesForExtendedLayout)])
-        self.edgesForExtendedLayout = UIRectEdgeNone;
-}
-
 - (void)viewWillAppear:(BOOL)animated
 {
     _viewOnScreen = YES;
@@ -93,7 +86,7 @@
     _keyboardVisible = up;
     NSDictionary* userInfo = [aNotification userInfo];
     NSTimeInterval animationDuration;
-    UIViewAnimationOptions animationCurve;
+    UIViewAnimationCurve animationCurve;
     CGRect keyboardEndFrame;
     [[userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] getValue:&animationCurve];
     [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] getValue:&animationDuration];
@@ -131,12 +124,18 @@
 - (void)textViewDidEndEditing:(UITextView *)textView {
     _entryElement.textValue = textView.text;
     
-    [_entryElement handleEditingChanged:self.entryCell];
+    if(_entryElement && _entryElement.delegate && [_entryElement.delegate respondsToSelector:@selector(QEntryDidEndEditingElement:andCell:)]){
+        [_entryElement.delegate QEntryDidEndEditingElement:_entryElement andCell:self.entryCell];
+    }
+    
+    if (_entryElement.onValueChanged) {
+        _entryElement.onValueChanged();
+    }
 }
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
-    if(_entryElement && _entryElement.delegate && [_entryElement.delegate respondsToSelector:@selector(QEntryShouldChangeCharactersInRange:withString:forElement:andCell:)]){
-        return [_entryElement.delegate QEntryShouldChangeCharactersInRange:range withString:text forElement:_entryElement andCell:self.entryCell];
+    if(_entryElement && _entryElement.delegate && [_entryElement.delegate respondsToSelector:@selector(QEntryShouldChangeCharactersInRangeForElement:andCell:)]){
+        return [_entryElement.delegate QEntryShouldChangeCharactersInRangeForElement:_entryElement andCell:self.entryCell];
     }
     return YES;
 }

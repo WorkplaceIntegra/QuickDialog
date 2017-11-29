@@ -42,15 +42,13 @@
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     cell.selectionStyle = self.enabled ? UITableViewCellSelectionStyleBlue : UITableViewCellSelectionStyleNone;
     cell.textField.enabled = NO;
-    cell.textField.textAlignment = self.appearance.labelAlignment;
-
     return cell;
 }
 
 
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath
 {
-    QMultilineTextViewController *textController = [[QMultilineTextViewController alloc] initWithTitle:self.title];
+	QMultilineTextViewController *textController = [[QMultilineTextViewController alloc] initWithTitle:self.title];
     textController.entryElement = self;
     textController.entryCell = (QEntryTableViewCell *) [tableView cellForElement:self];
     textController.resizeWhenKeyboardPresented = YES;
@@ -64,14 +62,13 @@
     textController.textView.returnKeyType = self.returnKeyType;
     textController.textView.editable = self.enabled;
 
-    __weak QMultilineElement *weakSelf = self;
-	__weak QMultilineTextViewController *weakTextController = textController;
+    __block QMultilineElement *weakSelf = self;
+	__weak QMultilineTextViewController* tc = textController;
     textController.willDisappearCallback = ^ {
-        weakSelf.textValue = weakTextController.textView.text;
+        weakSelf.textValue = tc.textView.text;
         [[tableView cellForElement:weakSelf] setNeedsDisplay];
-        [tableView deselectRowAtIndexPath:indexPath animated:YES];
     };
-    [controller displayViewController:textController withPresentationMode:self.presentationMode];
+    [controller displayViewControllerInPopover:textController withNavigation:NO];
 }
 
 - (void)fetchValueIntoObject:(id)obj

@@ -14,7 +14,9 @@
 
 #import "QEntryElement.h"
 #import "QuickDialog.h"
-@implementation QEntryElement
+@implementation QEntryElement  {
+    __unsafe_unretained QuickDialogController *_controller;
+}
 
 @synthesize textValue = _textValue;
 @synthesize placeholder = _placeholder;
@@ -30,13 +32,13 @@
     self = [super init];
     if (self){
         self.autocapitalizationType = UITextAutocapitalizationTypeSentences;
-        self.autocorrectionType = UITextAutocorrectionTypeDefault;
+        self.autocorrectionType = UITextAutocorrectionTypeNo;
+        self.textAlignment = NSTextAlignmentLeft;
         self.keyboardType = UIKeyboardTypeDefault;
         self.keyboardAppearance = UIKeyboardAppearanceDefault;
         self.returnKeyType = UIReturnKeyDefault;
         self.enablesReturnKeyAutomatically = NO;
         self.secureTextEntry = NO;
-        self.maxLength = 0;
     }
     return self;
 }
@@ -53,18 +55,16 @@
 
 - (UITableViewCell *)getCellForTableView:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller {
 
-    self.controller = controller;
-
     QEntryTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"QuickformEntryElement"];
     if (cell==nil){
         cell = [[QEntryTableViewCell alloc] init];
     }
-
-    [cell applyAppearanceForElement:self];
+    _controller = controller;
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.textField.enabled = self.enabled;
     cell.textField.userInteractionEnabled = self.enabled;
-    cell.textField.textAlignment = self.appearance.entryAlignment;
+    cell.textLabel.textColor = self.enabled ? [UIColor blackColor] : [UIColor lightGrayColor];
+    cell.textField.textAlignment = self.textAlignment;
     cell.imageView.image = self.image;
     [cell prepareForElement:self inTableView:tableView];
     return cell;
@@ -77,7 +77,7 @@
 
 - (void) fieldDidEndEditing
 {
-    [self performAction];
+    [self handleElementSelected:_controller];
 }
 
 - (void)fetchValueIntoObject:(id)obj {
@@ -88,28 +88,26 @@
 }
 
 - (BOOL)canTakeFocus {
-    return self.enabled && !self.hidden;
-}
-
-- (void)handleEditingChanged:(QEntryTableViewCell *)cell
-{
-    if(self.delegate && [self.delegate respondsToSelector:@selector(QEntryEditingChangedForElement:andCell:)]){
-        [self.delegate QEntryEditingChangedForElement:self andCell:cell];
-    }
-
-    [self handleEditingChanged];
+	if (self.hidden) {
+		return NO;
+	}
+	else {
+		return YES;
+	}
 }
 
 #pragma mark - UITextInputTraits
 
 @synthesize autocorrectionType = _autocorrectionType;
 @synthesize autocapitalizationType = _autocapitalizationType;
+@synthesize textAlignment = _textAlignment;
 @synthesize keyboardType = _keyboardType;
 @synthesize keyboardAppearance = _keyboardAppearance;
 @synthesize returnKeyType = _returnKeyType;
 @synthesize enablesReturnKeyAutomatically = _enablesReturnKeyAutomatically;
 @synthesize secureTextEntry = _secureTextEntry;
 @synthesize clearsOnBeginEditing = _clearsOnBeginEditing;
+@synthesize accessoryType = _accessoryType;
 @synthesize customDateFormat = _customDateFormat;
 
 

@@ -18,7 +18,6 @@
 
 @implementation QSection {
 @private
-    id _object;
     NSString *_headerImage;
     NSString *_footerImage;
     NSDictionary *_elementTemplate;
@@ -44,8 +43,6 @@
 
 @synthesize hidden = _hidden;
 @dynamic visibleIndex;
-@synthesize object = _object;
-
 
 - (QElement *)getVisibleElementForIndex:(NSInteger)index
 {
@@ -149,22 +146,16 @@
     }
 }
 
-- (void)bindToObject:(id)data
-{
-    [self bindToObject:data withString:self.bind];
-}
-
-- (void)bindToObject:(id)data withString:(NSString *)string
-{
-    if ([string length]==0 || [string rangeOfString:@"iterate"].location == NSNotFound)  {
-        for (QElement *el in self.elements) {
-            [el bindToObject:data shallow:el.shallowBind];
+- (void)bindToObject:(id)data {
+    if ([self.bind length]==0 || [self.bind rangeOfString:@"iterate"].location == NSNotFound)  {
+            for (QElement *el in self.elements) {
+                [el bindToObject:data];
+            }
+        } else {
+            [self.elements removeAllObjects];
         }
-    } else {
-        [self.elements removeAllObjects];
-    }
 
-    [[QBindingEvaluator new] bindObject:self toData:data withString:string];
+        [[QBindingEvaluator new] bindObject:self toData:data];
 
 }
 

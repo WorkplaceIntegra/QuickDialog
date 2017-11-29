@@ -12,20 +12,19 @@
 // permissions and limitations under the License.
 //
 
+
+#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@class QElement;
-@class QSection;
 
-@protocol QuickDialogDelegate  <NSObject>
+@interface QWebViewController : UIViewController <UIWebViewDelegate> {
 
+@private
+    UIWebView *_webView;
+    NSString *_url;
+    NSString *_html;
+}
 
-@optional
-
--(void) cell:(UITableViewCell *)cell willAppearForElement:(QElement *)element atIndexPath:(NSIndexPath *)indexPath;
-
--(void) header:(UIView *)header willAppearForSection:(QSection *)section atIndex:(NSInteger)indexPath;
--(void) footer:(UIView *)footer willAppearForSection:(QSection *)section atIndex:(NSInteger)indexPath;
-
+- (QWebViewController *)initWithUrl:(NSString *)string;
+- (QWebViewController *)initWithHTML:(NSString *)html;
 @end
-

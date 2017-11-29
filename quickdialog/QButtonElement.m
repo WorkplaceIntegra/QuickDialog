@@ -12,9 +12,7 @@
 // permissions and limitations under the License.
 //
 
-#import "QAppearance.h"
 #import "QButtonElement.h"
-#import "QElement+Appearance.h"
 
 @implementation QButtonElement
 
@@ -35,15 +33,16 @@
 }
 
 - (UITableViewCell *)getCellForTableView:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller {
-    QTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"QuickformButtonElement"];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"QuickformButtonElement"];
     if (cell == nil){
         cell= [[QTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"QuickformButtonElement"];
     }
-    [cell applyAppearanceForElement:self];
+    if (!self.enabled) {
+        cell.textLabel.textColor = [UIColor lightGrayColor];
+    }
     cell.textLabel.text = _title;
-    cell.textLabel.textAlignment = self.appearance.buttonAlignment;
-    cell.textLabel.font = self.appearance.labelFont;
-    cell.textLabel.textColor = self.enabled ? self.appearance.actionColorEnabled : self.appearance.actionColorDisabled;
+    cell.textLabel.textAlignment = NSTextAlignmentCenter;
+    cell.userInteractionEnabled = self.enabled;
     return cell;
 }
 
